@@ -3,3 +3,5 @@ screen_settings:
   size_y: 540
 
 best_score: 0
+
+last_save: "null"

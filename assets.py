@@ -50,3 +50,5 @@ turnip_bag_natural = pygame.image.load("assets/tilesets/turnip/sac_turnip_natura
 turnip_bag_fertilizer = pygame.image.load("assets/tilesets/turnip/sac_turnip_fertilizer.png")
 field_background = pygame.image.load("assets/tilesets/plantation.png")
 title_background = pygame.image.load("assets/tilesets/title_background.png")
+trou = pygame.image.load("assets/tilesets/Trou.png")
+intro_background = pygame.image.load("assets/intro/background.jpeg")
