@@ -12,6 +12,8 @@ screen = pygame.display.set_mode(
 import assets
 import classes
 
+playerInventory = classes.Inventory()
+
 
 def game_quit():
     #     mettre ici une sauvegarde du jeu
@@ -27,28 +29,43 @@ def change_interface(interface_list, flag):
             interface.active = False
 
 
-def change_food(aliment):
+def change_food(case, aliment):
     """fonction qui place les images correspondant a l'aliment selectionné """
     # print(aliment.name)
-    for case in classes.list_cases:
-        if case.get_aliment() is None:
-            case.set_aliment(classes.Carotte)
+    if not main_screen.selected_case is None and case.get_aliment() is None:
+        case.set_aliment(aliment)
         # screen.blit(assets.carrots_seed1, elt.get_pose())
 
+
+def addToInventory(element):
+    playerInventory.elements[element] += 1
+
+
+def randomize_shop():
+    item_list = []
+    r = random.randint(3)
+    l1 = random.sample([classes.Carotte, classes.Potato, classes.Corn, classes.Tomato, classes.Turnip], r)
+    l2 = random.sample([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5], r)
+    for item in l1:
+        classes.Button(500, 200, item.ui_element[random.randint(1)], 0.5, 1, on_click=lambda: addToInventory(item.name)).append(item_list)
+    return (l1, l2)
+
+
+# Classe nutural tois fertilizer un choix sur 2
 
 interface_list = []
 # Liste de boutons
 title_screen_buttons = [
-    classes.Button(screen.get_width() // 4 - 30, screen.get_height() // 4 * 3, "New Game", 2, 2, ombre=True,
-                   on_click=lambda: change_interface(interface_list, 1)),
-    classes.Button(screen.get_width() // 4 * 3 - 30, screen.get_height() // 4 * 3, "Quit", 2, 2, ombre=True,
-                   on_click=lambda: game_quit())
+    classes.Button_text(screen.get_width() // 4 - 30, screen.get_height() // 4 * 3, "New Game", 2, 2, ombre=True,
+                        on_click=lambda: change_interface(interface_list, 1)),
+    classes.Button_text(screen.get_width() // 4 * 3 - 30, screen.get_height() // 4 * 3, "Quit", 2, 2, ombre=True,
+                        on_click=lambda: game_quit())
 ]
 
 if yamlManager.config["last_save"] != "null":
     title_screen_buttons.append(
-        classes.Button(screen.get_width() // 2 - 30, screen.get_height() // 4 * 3, "Continue", 2, 2, ombre=True,
-                       on_click=lambda: change_interface(interface_list, 1)))
+        classes.Button_text(screen.get_width() // 2 - 30, screen.get_height() // 4 * 3, "Continue", 2, 2, ombre=True,
+                            on_click=lambda: change_interface(interface_list, 1)))
 
 # Liste des interfaces
 title_screen = classes.Interface(title_screen_buttons, 0, True, screen, background_color=(132, 74, 14))
@@ -74,15 +91,26 @@ title_screen.addElement((assets.title_font.render("Farmer Simulator", False, (21
                          (screen.get_width() // 2 - 400, 50, 100, 100)))
 
 main_screen_buttons = [
-    classes.Button(screen.get_width() // 100, screen.get_height() // 50, "Save & Quit", 4, 2, ombre=True,
-                   on_click=lambda: change_interface(interface_list, 0)),
-    classes.Button(screen.get_width() // 100 + 100, screen.get_height() // 50 + 100, "Carrot", 4, 2, True,
-                   on_click=lambda: change_food(classes.Carotte))
+    classes.Button_text(screen.get_width() // 100, screen.get_height() // 50, "Save & Quit", 4, 2, ombre=True,
+                        on_click=lambda: change_interface(interface_list, 0)),
+    # classes.Button_text(screen.get_width() // 100 + 100, screen.get_height() // 50 + 100, "Carrot", 4, 2, ombre=True,
+    #                on_click=lambda: change_food(main_screen.selected_case, classes.Turnip))
 ]
-main_screen = classes.Interface(main_screen_buttons, 1, False, screen)
+main_screen = classes.main_interface(main_screen_buttons, 1, False, screen)
+
+# liste_try = [lambda :(main_screen.selected_case, classes.Carotte), lambda :change_food(main_screen.selected_case, classes.Potato), lambda :change_food(main_screen.selected_case, classes.Corn), lambda :change_food(main_screen.selected_case, classes.Tomato), lambda :change_food(main_screen.selected_case, classes.Turnip)]
+# for i in range(len(classes.aliment_list)):
+#     main_screen_buttons.append(classes.Button(screen.get_width() // 10 * (5 + i), screen.get_height() // 50,
+#                                               classes.aliment_list[i].ui_element[0], 1, 1,
+#                                               liste_try[i]))
+
+
 main_screen.addElement((assets.field_background, (0, 0)))
 for elt in classes.list_cases:
     main_screen.addElement(elt)
+
+# shop_screen = classes.Interface([],2,False, screen)
+# shop_screen.addElement((assets.________________))
 
 interface_list = [title_screen, main_screen]
 
@@ -98,7 +126,8 @@ while True:
             for interface in interface_list:
                 if interface.active:
                     interface.click()
-                    interface.update_grid()
+                    if isinstance(interface, classes.main_interface):
+                        interface.update_grid()
 
         if event.type == growth_event:
             for cases in classes.list_cases:
