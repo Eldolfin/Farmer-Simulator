@@ -31,8 +31,13 @@ background = pygame.surface.Surface(screen.get_size())
 background.set_colorkey((0, 0, 0))
 for x in range(screen.get_width() // 30 + 1):
     for y in range(screen.get_height() // 27 + 1):
-        if random.random() < .40:
+        r = random.random()
+        if r < .24:
             background.blit(assets.grass, (x * 30, y * 30))
+        elif r < .30:
+            background.blit(assets.short_grass, (x * 30, y * 30))
+        elif r < .31:
+            background.blit(assets.haybale, (x * 30, y * 30))
 
 interface = classes.Interface(buttons, True, screen,
                               background_color=(47, 129, 54))
