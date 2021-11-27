@@ -1,7 +1,11 @@
 # Farmer-Simulator
 Projet du Hackaton 2021
-Groupe: clement.brun luke.goboyan antoine.goetschy oscar.le-dauphin
-https://linktr.ee/GottaGoHack
+Groupe: 
+  clement.brun 
+  luke.goboyan 
+  antoine.goetschy 
+  oscar.le-dauphin
+Lien hackaton du site hackaton: https://www.gottagohack.fr
 
 Première preview:
 
