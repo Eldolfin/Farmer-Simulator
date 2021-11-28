@@ -3,9 +3,6 @@ import assets
 from assets import tomato_bag_fertilizer
 
 
-palier_camps = [0, 100, 500, 1000, 2500, 5000]
-
-
 class Button:
     def __init__(self, x, y, image, resize_x=1, resize_y=1, on_click=lambda: print("unregistred button click")):
         # on_click est une fonction elle s'execute lorsqu'un click est détecté (regardez les lambdas)

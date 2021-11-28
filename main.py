@@ -14,7 +14,7 @@ import classes
 
 Day = 1
 
-
+palier_camps = [0, 100, 500, 1000, 2500, 5000]
 
 def game_quit():
     #     mettre ici une sauvegarde du jeu
@@ -57,7 +57,8 @@ def randomize_shop():
     return item_list
 
 
-
+def add_camps(number):
+    main_screen.screen.add_element((assets.camps, (2 + (number % 3) * 100, 440 + 100 * (number // 3))))
 
 
 # Classe nutural tois fertilizer un choix sur 2
