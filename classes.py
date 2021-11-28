@@ -1,11 +1,17 @@
+import modified as modified
 import pygame
+import yaml
+
 import assets
 from assets import tomato_bag_fertilizer
 
 
 class Button:
-    def __init__(self, x, y, image, resize_x=1, resize_y=1, on_click=lambda: print("unregistred button click")):
+    def __init__(self, x, y, image, resize_x=1, resize_y=1, on_click=lambda: print("unregistred button click"),
+                 anydata=None):
         # on_click est une fonction elle s'execute lorsqu'un click est détecté (regardez les lambdas)
+        if anydata is None:
+            anydata = []
         self.on_click = on_click
         self.screen = None
         self.spritebase = pygame.transform.scale(image, (image.get_width() * resize_x, image.get_height() * resize_y))
@@ -14,11 +20,13 @@ class Button:
         self.rect = self.sprite.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.anydata = anydata
 
     def update(self, interface_clicked):
         # Le offset sert à ce que le text recule quand le bouton est cliqué... à voir
         """Verification des valeurs"""
-        self.screen.blit(self.sprite, self.rect)
+        if self.screen is not None:
+            self.screen.blit(self.sprite, self.rect)
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if interface_clicked:
                 self.on_click()
@@ -57,15 +65,33 @@ class Button_aliment(Button):
     def __init__(self, x, y, aliment, resize_x=1, resize_y=1):
         self.aliment = aliment
         self.interface = None
-        lam = lambda: (self.interface.selected_case.set_aliment(self.aliment)) if (
-            not self.interface.selected_case is None) else None
+        lam = lambda: None
         super().__init__(x, y, aliment.ui_element[0], resize_x, resize_y, lam)
+
+    def update(self, interface_clicked):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            if interface_clicked:
+                self.interface.selected_aliment = self.aliment
+        super().update(interface_clicked)
 
 
 class Button_counter(Button):
-    def __init__(self, x, y, image, count, resize_x=1, resize_y=1, on_click=lambda: print("unregistred button click")):
-        super().__init__(x, y, image, resize_x, resize_y, lambda: on_click if self.count > 0 else None)
+    def __init__(self, x, y, image, count, resize_x=1, resize_y=1, on_click=lambda: print("unregistred button click"),
+                 use_custom_onclick=False, anydata=None):
         self.count = count
+
+        def modified_lambda():
+            if self.count > 0:
+                self.count -= 1
+                if use_custom_onclick:
+                    if not on_click(self):
+                        self.count += 1
+                else:
+                    on_click()
+            else:
+                print("Vous ne pouvez plus acheter d'items de ce type pour la journée!")
+
+        super().__init__(x, y, image, resize_x, resize_y, modified_lambda, anydata)
 
 
 class Interface:
@@ -88,7 +114,10 @@ class Interface:
 
         # On affiche chaque éléments qui ne sont pas des cases
         for element in self.elements:
-            if not isinstance(element, Case):
+            if isinstance(element, ValueText):
+                element.update()
+                self.screen.blit(element.sprite, element.rect)
+            elif not isinstance(element, Case):
                 self.screen.blit(element[0], element[1])
 
         for button in self.button_list:
@@ -110,9 +139,15 @@ class Interface:
             if isinstance(button, Button_aliment):
                 button.interface = self
 
-    def set_buttons(self, buttons):
-        self.buttons = buttons
+    def set_buttons(self, button_list):
+        self.button_list = button_list
         self.init_buttons()
+
+    def reset_elts(self, keepone=False):
+        if keepone:
+            self.elements = [self.elements[0]]
+        else:
+            self.elements = []
 
 
 class main_interface(Interface):
@@ -122,12 +157,18 @@ class main_interface(Interface):
         self.case_grid.set_colorkey((0, 0, 0))
         self.update_grid()
         self.selected_case = None
+        self.selected_aliment = None
 
     def update(self):
-        if self.clicked:
+        if pygame.mouse.get_pressed()[0]:
             for case in list_cases:
                 if case.rect.collidepoint((pygame.mouse.get_pos()[0] - 360, pygame.mouse.get_pos()[1] - 120)):
                     self.selected_case = case
+                    if self.selected_aliment is not None and \
+                            playerInventory.elements[self.selected_aliment.name + " seeds"] > 0 and \
+                            self.selected_case.get_aliment() is None:
+                        playerInventory.elements[self.selected_aliment.name + " seeds"] -= 1
+                        self.selected_case.set_aliment(self.selected_aliment)
         super().update()
         self.screen.blit(self.case_grid, (360, 120))
         if not self.selected_case is None:
@@ -143,50 +184,73 @@ class main_interface(Interface):
                 self.case_grid.blit(element.get_state(), element.get_pose())
 
 
+class ValueText():
+    def __init__(self, x, y, text, text_resize=1, ombre=False, color=(0, 0, 0)):
+        self.text = text
+        self.ombre = ombre
+        self.rect = pygame.Rect(x, y, 40, 30)
+        self.color = color
+        self.sprite = assets.button_font.render(self.text, False, self.color)
+
+    def update(self):
+        if self.ombre:
+            self.sprite = assets.button_font.render(self.text, False, (0, 0, 0)).convert_alpha()
+            self.sprite.blit(assets.button_font.render(self.text, False, self.color), (-2, -2))
+        else:
+            self.sprite = assets.button_font.render(self.text, False, self.color)
+
+    def set_text(self, text):
+        self.text = str(text)
+
+
 class Aliments:
     """Carectèristique de chaque aliments"""
 
-    def __init__(self, name, growth_natural, growth_fertilizer, ui_element, growth_cycle, price):
+    def __init__(self, name, growth_natural, growth_fertilizer, ui_element, growth_cycle, price_sell, price_buy):
         self.name = name
         self.growth_natural = growth_natural
         self.growth_fertilizer = growth_fertilizer
         self.ui_element = ui_element
         self.growth_cycle = growth_cycle
-        self.price = price
+        self.price = price_sell
+        self.price_buy = price_buy
 
     def Get_price(self):
         return self.price
+
+    def Get_price_buy(self):
+        return self.price_buy
 
 
 Carotte = Aliments("carotte",
                    [assets.carrots_seed1, assets.carrots_seed2, assets.carrots_natural_ground],
                    [assets.carrots_seed1, assets.carrots_seed2, assets.carrots_fertilizer_ground],
                    [assets.carrots_bag_natural, assets.carrots_bag_fertilizer, assets.carrots_natural,
-                    assets.carrots_fertilizer], 10, 5)
+                    assets.carrots_fertilizer], 10, 5, 2)
 
 Potato = Aliments("potato",
                   [assets.potato_seed1, assets.potato_seed2, assets.potato_natural_ground],
                   [assets.potato_seed1, assets.potato_seed2, assets.potato_fertilizer_ground],
                   [assets.potato_bag_natural, assets.potato_bag_fertilizer, assets.potato_natural,
-                   assets.potato_fertilizer], 5, 2)
+                   assets.potato_fertilizer], 5, 2, 1)
 
 Corn = Aliments("corn",
                 [assets.corn_seed1, assets.corn_seed2, assets.corn_natural_ground],
                 [assets.corn_seed1, assets.corn_seed2, assets.corn_fertilizer_ground],
                 [assets.corn_bag_natural, assets.corn_bag_fertilizer, assets.corn_natural,
-                 assets.corn_fertilizer], 20, 12)
+                 assets.corn_fertilizer], 20, 12, 6)
 
 Tomato = Aliments("tomato",
                   [assets.tomato_seed1, assets.tomato_seed2, assets.tomato_natural_ground],
                   [assets.tomato_seed1, assets.tomato_seed2, assets.tomato_fertilizer_ground],
                   [assets.tomato_bag_natural, tomato_bag_fertilizer, assets.tomato_natural,
-                   assets.tomato_fertilizer], 40, 25)
+                   assets.tomato_fertilizer], 40, 25, 12)
 
 Turnip = Aliments("turnip",
                   [assets.turnip_seed1, assets.turnip_seed2, assets.turnip_natural_ground],
                   [assets.turnip_seed1, assets.turnip_seed2, assets.turnip_fertilizer_ground],
                   [assets.turnip_bag_natural, assets.turnip_bag_fertilizer, assets.turnip_natural,
-                   assets.turnip_fertilizer], 60, 60)
+                   assets.turnip_fertilizer], 60, 60, 30)
 
 aliment_list = [Potato, Carotte, Corn, Tomato, Turnip]
 
@@ -197,7 +261,8 @@ class Case:
         # self.y = y
         # coordonées remplacées par un rect
         self.rect = pygame.rect.Rect((x, y, 30, 30))
-        self.aliment = None
+        # self.aliment = None
+        self.aliment_type = "None"
         self.growth = 0
         self.fertilized = 0
         self.tick = 0
@@ -205,35 +270,33 @@ class Case:
     def get_pose(self):
         return self.rect.x, self.rect.y
 
-    def inventory(self):
-        return self.aliment
-
     def set_aliment(self, aliments):
-        self.aliment = aliments
+        self.aliment_type = aliments.name
 
     def get_aliment(self):
-        return self.aliment
+        for aliment in aliment_list:
+            if self.aliment_type == aliment.name:
+                return aliment
+        return None
 
     def get_state(self):
-        if self.aliment is None:
+        if self.get_aliment() is None:
             return assets.trou
         else:
             if self.fertilized > 0:
-                return self.aliment.growth_fertilizer[self.growth]
+                return self.get_aliment().growth_fertilizer[self.growth]
             else:
-                return self.aliment.growth_natural[self.growth]
+                return self.get_aliment().growth_natural[self.growth]
 
     def dotick(self):
-        if self.aliment is not None:
+        if self.aliment_type != "None":
             self.tick += 1
             self.fertilized -= 1
-            if self.tick % self.aliment.growth_cycle == 0:
-                if self.growth == 2 :
-                    #playerInventory.elements[self.aliment.name] += 1
-                    playerInventory.add_money(self.aliment.price)
-                    self.aliment = None
+            if self.tick % self.get_aliment().growth_cycle == 0:
+                if self.growth == 2:
+                    playerInventory.add_money(self.get_aliment().price)
+                    self.aliment_type = "None"
                     self.growth = 0
-                #     METTRE ICI DANS L'INVENTAIRE
                 else:
                     self.growth += 1
 
@@ -241,14 +304,21 @@ class Case:
         self.fertilized = number
 
 
+seed_list = ["carotte seeds", "tomato seeds", "corn seeds", "turnip seeds", "potato seeds"]
+
+
 class Inventory:
     def __init__(self):
         self.elements = {Carotte.name: 0, Tomato.name: 0, Corn.name: 0, Turnip.name: 0, Potato.name: 0,
-                         "carrot seeds": 0, "tomato seeds": 0, "corn seeds": 0, "turnip seeds": 0, "potato seeds": 0,
+                         "carotte seeds": 2, "tomato seeds": 0, "corn seeds": 0, "turnip seeds": 0,
+                         "potato seeds": 4,
                          "fertilizer": 0, "money": 0}
 
     def add_element(self, element):
         self.elements[element] += 1
+
+    def Get_seeds(self, nom):
+        return self.elements[nom]
 
     def try_pay(self, price):
         if self.elements["money"] >= price:
@@ -270,13 +340,22 @@ class Inventory:
     # Création des cases
 
 
+class PlayerData:
+    def __init__(self):
+        self.list_cases = []
+        for i in range(20):
+            for j in range(14):
+                self.list_cases.append(
+                    Case(i * 30, j * 30))
+        self.player_inventory = Inventory()
+
+        def serialize(self):
+            return yaml.dump(self)
+
+
+player_data = PlayerData()
+
 # list_cases = [[classes.Case(360+x*30, 120+y*30) for x in range(20)] for y in range(12)]
-list_cases = []
-for i in range(20):
-    for j in range(14):
-        list_cases.append(
-            Case(i * 30, j * 30))
+list_cases = player_data.list_cases
 
-
-playerInventory = Inventory()
-
+playerInventory = player_data.player_inventory
