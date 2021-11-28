@@ -5,7 +5,8 @@ pygame.init()
 screen = pygame.display.set_mode((500, 500))
 
 import classes
-# import assets
+
+import assets
 # print(yamlManager.config.yml["screen_settings"]["size_x"])
 
 # print(assets.title_font.render("azazdazdazdaz",False,(0,0,0)).get_width())
@@ -18,6 +19,10 @@ import classes
 
 # print(classes.Button_text(screen.get_width() // 100, screen.get_height() // 50, "Save & Quit", 4, 2, ombre=True,).rect.height)
 
-player_data = classes.player_data()
+# player_data = classes.player_data()
+#
+# yaml.
 
-yaml.
+print(
+    assets.title_font.render("Apocalyptic Farmer", False, (219, 215, 101)).get_width()
+)

@@ -113,7 +113,7 @@ title_screen_buttons = [
                         on_click=lambda: game_quit())
 ]
 
-if yamlManager.config["last_save"] != "null":
+if yamlManager.config["last_save"] != "None":
     title_screen_buttons.append(
         classes.Button_text(screen.get_width() // 2 - 30, screen.get_height() // 4 * 3, yamlManager.config["last_save"], 2, 2,text_resize=0.5, ombre=True,
                             on_click=lambda: load_save()))
@@ -137,10 +137,10 @@ for x in range(screen.get_width() // 30 + 1):
             title_background.blit(assets.haybale, (x * 30, y * 30))
 
 title_screen.add_element((title_background, (0, 0)))
-title_screen.add_element((assets.title_font.render("Farmer Simulator", False, (0, 0, 0)),
-                          (screen.get_width() // 2 - 400 + 3, 50 + 3)))
-title_screen.add_element((assets.title_font.render("Farmer Simulator", False, (219, 215, 101)),
-                          (screen.get_width() // 2 - 400, 50)))
+title_screen.add_element((assets.title_font.render("Apocalyptic Farmer", False, (0, 0, 0)),
+                          (screen.get_width() // 2 - 450 + 3, 50 + 3)))
+title_screen.add_element((assets.title_font.render("Apocalyptic Farmer", False, (219, 215, 101)),
+                          (screen.get_width() // 2 - 450, 50)))
 
 main_screen_buttons = [
     classes.Button_text(screen.get_width() // 100, screen.get_height() // 50, "Save & Quit", 4, 2, ombre=True,
