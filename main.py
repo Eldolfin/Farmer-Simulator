@@ -79,12 +79,12 @@ def randomize_shop():
 
     for item in l1:
         item_list.append(
-            classes.Button_counter(40 + coords_bag * 75, 80,
+            classes.Button_counter(70 + coords_bag * 75, 80,
                                    item.ui_element[0], 10, 1, 1, on_click=lambda x: buy_function(x),
                                    use_custom_onclick=True, anydata=[item]))
         coords.remove(coords[0])
         shop_screen.add_element(
-            (assets.button_font.render(str(item.price_buy), False, (0, 0, 0)), (55 + coords_bag * 75, 160)))
+            (assets.button_font.render(str(item.price_buy), False, (0, 0, 0)), (85 + coords_bag * 75, 160)))
         coords_bag += 1
         # print(classes.playerInventory.elements)
 
