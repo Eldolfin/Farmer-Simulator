@@ -67,7 +67,7 @@ def randomize_shop():
     compt = 0
     coords_bag = 0
     coords = [(5, -15), (5, 15), (35, -15), (35, 15)]
-    r = 4
+    r = random.randint(2,4)
     l1 = random.sample([classes.Carotte, classes.Potato, classes.Corn, classes.Tomato, classes.Turnip], r)
     l2 = random.sample([1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5], r)
 
@@ -84,7 +84,7 @@ def randomize_shop():
                                    use_custom_onclick=True, anydata=[item]))
         coords.remove(coords[0])
         shop_screen.add_element(
-            (assets.button_font.render(str(item.price_buy), False, (0, 0, 0)), (85 + coords_bag * 75, 160)))
+            (assets.button_font.render("$"+str(item.price_buy), False, (0, 255, 0)), (85 + coords_bag * 75, 160)))
         coords_bag += 1
         # print(classes.playerInventory.elements)
 
@@ -100,6 +100,7 @@ def update_camps():
     if nb_camps < 6 and classes.playerInventory.elements["money"] >= palier_camps[nb_camps]:
         main_screen.add_element((assets.camps, (2 + (nb_camps % 3) * 100, 340 + 100 * (nb_camps // 3))))
         nb_camps += 1
+        pygame.time.set_timer(growth_event, 1000//nb_camps)
 
 
 # Classe nutural tois fertilizer un choix sur 2
@@ -194,12 +195,12 @@ intro_screen.add_element((assets.button_font.render("a better future...", False,
 interface_list = [title_screen, main_screen, shop_screen, intro_screen]
 
 growth_event = pygame.USEREVENT + 1
-# pygame.time.set_timer(growth_event, 1000)
-pygame.time.set_timer(growth_event, 300)
+pygame.time.set_timer(growth_event, 1000)
+# pygame.time.set_timer(growth_event, 300)
 
 daylight_event = pygame.USEREVENT + 2
-# pygame.time.set_timer(daylight_event, 180000)
-pygame.time.set_timer(daylight_event, 7000)
+pygame.time.set_timer(daylight_event, 180000)
+# pygame.time.set_timer(daylight_event, 1800000)
 
 shop_screen.set_buttons(randomize_shop())
 
@@ -211,7 +212,7 @@ shop_screen.set_buttons(randomize_shop())
 
 def update_ValueTexts():
     for i in range(len(classes.aliment_list)):
-        menu_ValueText_list[i].set_text(classes.playerInventory.elements[classes.aliment_list[i].name + " seeds"])
+        menu_ValueText_list[i].set_text(str(classes.playerInventory.elements[classes.aliment_list[i].name + " seeds"]))
     menu_ValueText_list[5].set_text("$"+str(classes.playerInventory.elements["money"]))
 
 
