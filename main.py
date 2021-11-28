@@ -142,6 +142,10 @@ title_screen.add_element((assets.title_font.render("Apocalyptic Farmer", False, 
                           (screen.get_width() // 2 - 450 + 3, 50 + 3)))
 title_screen.add_element((assets.title_font.render("Apocalyptic Farmer", False, (219, 215, 101)),
                           (screen.get_width() // 2 - 450, 50)))
+title_screen.add_element((pygame.transform.scale(assets.button_font.render("clement.brun luke.goboyan antoine.goetschy oscar.le-dauphin", False, (0, 0, 0)),(442,15)),
+                          (screen.get_width() -450+ 3, screen.get_height()-20+ 3)))
+title_screen.add_element((pygame.transform.scale(assets.button_font.render("clement.brun luke.goboyan antoine.goetschy oscar.le-dauphin", False, (219, 215, 101)),(442,15)),
+                          (screen.get_width() -450, screen.get_height()-20+ 3)))
 
 main_screen_buttons = [
     classes.Button_text(screen.get_width() // 100, screen.get_height() // 50, "Save & Quit", 4, 2, ombre=True,

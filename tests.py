@@ -24,5 +24,5 @@ import assets
 # yaml.
 
 print(
-    assets.title_font.render("Apocalyptic Farmer", False, (219, 215, 101)).get_width()
+    assets.button_font.render("clement.brun luke.goboyan antoine.goetschy oscar.le-dauphin", False, (219, 215, 101)).get_size()
 )
